@@ -7,6 +7,7 @@ import type { ViteDevServer } from "vite";
 
 const app = express();
 const port = process.env.PORT || 5000;
+const skipDbInit = process.env.SKIP_DB_INIT === "true";
 
 console.log('🚀 Starting Humansys Server...');
 
@@ -80,13 +81,25 @@ app.use('/api', (err: any, req: express.Request, res: express.Response, next: ex
 
 async function createServer() {
   try {
-    console.log('🔧 Initializing database...');
-    await initializeDatabase();
-    console.log('✅ Database initialized');
+    if (skipDbInit) {
+      console.warn("Skipping database initialization because SKIP_DB_INIT=true");
+    } else {
+      try {
+        console.log('🔧 Initializing database...');
+        await initializeDatabase();
+        console.log('✅ Database initialized');
 
-    console.log('🔧 Running multi-tenant user corrections...');
-    await runUserCorrections();
-    console.log('✅ Multi-tenant corrections completed');
+        console.log('🔧 Running multi-tenant user corrections...');
+        await runUserCorrections();
+        console.log('✅ Multi-tenant corrections completed');
+      } catch (dbError) {
+        if (process.env.NODE_ENV === "production") {
+          throw dbError;
+        }
+        console.warn("Database initialization failed in development mode. Continuing startup without database.");
+        console.warn(dbError);
+      }
+    }
 
     console.log('🔧 Registering API routes...');
     const httpServer = await registerRoutes(app);
