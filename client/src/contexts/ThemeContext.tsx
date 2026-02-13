@@ -11,6 +11,13 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const normalizeTheme = (value: string | null): Theme => {
+  if (value === 'dark' || value === 'light' || value === 'auto') return value;
+  // Backward compatibility with old settings value
+  if (value === 'system') return 'auto';
+  return 'light';
+};
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
@@ -19,8 +26,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const savedTheme = localStorage.getItem('theme') as Theme | null;
-        if (savedTheme) setTheme(savedTheme);
+        const savedTheme = normalizeTheme(localStorage.getItem('theme'));
+        setTheme(savedTheme);
       } catch (error) {
         console.warn('Could not load theme from localStorage:', error);
       }
@@ -39,7 +46,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const newActualTheme = getActualTheme();
     setActualTheme(newActualTheme);
 
-    document.documentElement.className = newActualTheme;
+    document.documentElement.classList.toggle('dark', newActualTheme === 'dark');
     try {
       localStorage.setItem('theme', theme);
     } catch (error) {
@@ -51,7 +58,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       const handleChange = () => {
         const newTheme = mediaQuery.matches ? 'dark' : 'light';
         setActualTheme(newTheme);
-        document.documentElement.className = newTheme;
+        document.documentElement.classList.toggle('dark', newTheme === 'dark');
       };
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);

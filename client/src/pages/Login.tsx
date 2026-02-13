@@ -69,6 +69,19 @@ export const Login = () => {
 
     try {
       const result = await signIn(loginData.email, loginData.password);
+      
+      if (!result.success) {
+        const errorMessage = typeof result.error === 'string'
+          ? result.error
+          : 'Credenciais inválidas. Verifique email e senha.';
+
+        toast({
+          title: "Erro no login",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
+      }
 
       const isFounder = loginData.email === 'fernandoluizsouzaramalho@gmail.com';
       const redirectPath = isFounder ? '/app/founder-dashboard' : '/app';

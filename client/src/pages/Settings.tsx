@@ -51,7 +51,7 @@ import { UserManagementDialog } from '@/components/settings/UserManagementDialog
 export const Settings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { setTheme } = useTheme();
+  const { setTheme, theme: currentTheme } = useTheme();
   const navigate = useNavigate();
   const { credits, updateCredits } = useCredits();
   const [searchParams] = useSearchParams();
@@ -102,7 +102,7 @@ export const Settings = () => {
       dataCollection: false
     },
     appearance: {
-      theme: 'system',
+      theme: currentTheme === 'auto' ? 'system' : currentTheme,
       compactMode: false,
       animations: true
     },
@@ -125,26 +125,8 @@ export const Settings = () => {
   }, [settings.appearance.theme]);
 
   const applyTheme = (theme: string) => {
-    const html = document.documentElement;
-    
-    if (theme === 'dark') {
-      html.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else if (theme === 'light') {
-      html.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      // system
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        html.classList.add('dark');
-      } else {
-        html.classList.remove('dark');
-      }
-      localStorage.setItem('theme', 'system');
-    }
-    
-    // Atualizar o ThemeContext para refletir na Header
-    setTheme(theme as 'light' | 'dark' | 'auto');
+    const normalizedTheme = theme === 'system' ? 'auto' : theme;
+    setTheme(normalizedTheme as 'light' | 'dark' | 'auto');
   };
 
   const loadUserSettings = async () => {
