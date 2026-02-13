@@ -129,26 +129,49 @@ async function createServer() {
       res.status(500).send('Internal Server Error');
     });
 
-    // Start server with proper error handling
-    const numericPort = typeof port === 'string' ? parseInt(port, 10) : port;
-    const server = httpServer.listen(numericPort, "0.0.0.0", () => {
-      console.log(`🚀 Server running on http://0.0.0.0:${port}`);
-      console.log(`📡 API available at http://0.0.0.0:${port}/api`);
-      console.log(`🔗 Health check: http://0.0.0.0:${port}/api/health`);
-    });
+    // Start server with port retry in development mode
+    const basePort = typeof port === "string" ? parseInt(port, 10) : port;
+    const maxPortAttempts = 10;
+    let activePort = basePort;
+    let server: any = null;
 
-    // Handle server errors
-    server.on('error', (error: any) => {
-      console.error('❌ Server error:', error);
+    for (let attempt = 0; attempt < maxPortAttempts; attempt++) {
+      const candidatePort = basePort + attempt;
+      const listenResult = await new Promise<any>((resolve, reject) => {
+        const candidateServer = httpServer.listen(candidatePort, "0.0.0.0", () => {
+          resolve({ server: candidateServer, port: candidatePort });
+        });
 
-      if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${port} is already in use`);
-        console.log('💡 Try running: pkill -f "node|tsx|vite" && npm run dev');
+        candidateServer.once("error", (error: any) => {
+          if (error.code === "EADDRINUSE" && process.env.NODE_ENV !== "production") {
+            console.warn(`Port ${candidatePort} is already in use, trying ${candidatePort + 1}...`);
+            resolve(null);
+            return;
+          }
+          reject(error);
+        });
+      });
+
+      if (listenResult) {
+        server = listenResult.server;
+        activePort = listenResult.port;
+        break;
       }
+    }
 
+    if (!server) {
+      throw new Error(`No available port found between ${basePort} and ${basePort + maxPortAttempts - 1}`);
+    }
+
+    console.log(`Server running on http://0.0.0.0:${activePort}`);
+    console.log(`API available at http://0.0.0.0:${activePort}/api`);
+    console.log(`Health check: http://0.0.0.0:${activePort}/api/health`);
+
+    // Handle server errors after startup
+    server.on("error", (error: any) => {
+      console.error("Server error:", error);
       process.exit(1);
     });
-
     // Graceful shutdown
     process.on('SIGTERM', () => {
       console.log('📴 Received SIGTERM, shutting down gracefully...');
@@ -177,3 +200,4 @@ createServer().catch((error) => {
   console.error('❌ Server startup failed:', error);
   process.exit(1);
 });
+
