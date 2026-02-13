@@ -1,0 +1,11 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="390" height="844" fill="#f8fafc"/>
+<rect x="0" y="0" width="390" height="64" fill="#10b981"/>
+<text x="195" y="40" text-anchor="middle" fill="white" font-family="system-ui" font-size="18" font-weight="bold">HumanSys</text>
+<rect x="20" y="100" width="350" height="120" rx="8" fill="white" stroke="#e2e8f0"/>
+<text x="40" y="130" fill="#1f2937" font-family="system-ui" font-size="16" font-weight="bold">Dashboard</text>
+<rect x="20" y="240" width="350" height="120" rx="8" fill="white" stroke="#e2e8f0"/>
+<text x="40" y="270" fill="#1f2937" font-family="system-ui" font-size="16" font-weight="bold">Treinamentos</text>
+<rect x="20" y="380" width="350" height="120" rx="8" fill="white" stroke="#e2e8f0"/>
+<text x="40" y="410" fill="#1f2937" font-family="system-ui" font-size="16" font-weight="bold">Colaboradores</text>
+</svg>

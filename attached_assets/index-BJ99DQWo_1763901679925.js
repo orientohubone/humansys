@@ -1,0 +1,41 @@
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.hsys.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Humansys - Transforme sua Gestão de RH com IA</title>
+    <meta name="description" content="Plataforma completa de RH com Inteligência Artificial. Preveja turnover, engaje colaboradores e transforme sua gestão de pessoas." />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#10b981" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="HumanSys" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="HumanSys" />
+    
+    <!-- PWA Icons -->
+    <link rel="apple-touch-icon" href="/icon-apple-touch.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileColor" content="#10b981" />
+    <meta name="msapplication-TileImage" content="/icon-192x192.png" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-BsfbeS5J.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-W5GCvXW8.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

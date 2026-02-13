@@ -1,0 +1,38 @@
+✅ Profile loaded (mock data): 
+Object {id: "00000000-0000-0000-0000-000000000001", email: "fernandoluizsouzaramalho@gmail.com", full_name: "Fernando Ramalho", role: "founder", avatar_url: "https://ui-avatars.com/api/?name=Fernando%20Ramalho&size=150&background=0D8ABC&color=fff&bold=true", …}
+📥 Carregando dados do perfil nas abas: 
+Object {id: "00000000-0000-0000-0000-000000000001", email: "fernandoluizsouzaramalho@gmail.com", full_name: "Fernando Ramalho", role: "founder", avatar_url: "https://ui-avatars.com/api/?name=Fernando%20Ramalho&size=150&background=0D8ABC&color=fff&bold=true", …}
+📥 Carregando dados do perfil nas abas: 
+Object {id: "00000000-0000-0000-0000-000000000001", email: "fernandoluizsouzaramalho@gmail.com", full_name: "Fernando Ramalho", role: "founder", avatar_url: "https://ui-avatars.com/api/?name=Fernando%20Ramalho&size=150&background=0D8ABC&color=fff&bold=true", …}
+🖼️ Header - Getting user avatar: 
+✅ Avatar carregado com sucesso: https://ui-avatars.com/api/?name=Fernando%20Ramalho&size=150&background=0D8ABC&color=fff&bold=true
+🖼️ Header - Getting user avatar: 
+📥 Carregando dados do perfil nas abas: 
+Object {id: "00000000-0000-0000-0000-000000000001", email: "fernandoluizsouzaramalho@gmail.com", full_name: "Fernando Ramalho", role: "founder", avatar_url: "https://ui-avatars.com/api/?name=Fernando%20Ramalho&size=150&background=0D8ABC&color=fff&bold=true", …}
+🖼️ Header - Getting user avatar: 
+✅ ProtectedRoute - Access granted, rendering children
+🖼️ Header - Getting user avatar: 
+🧭 Rota atual mudou para: /app/settings
+🔍 Location completa: 
+Object {pathname: "/app/settings", search: "", hash: "", state: null, key: "6ke477gn"}
+🖼️ Header - Getting user avatar: 
+🔄 Loading users from API...
+📡 API Response status: 200
+✅ Users loaded from API: 
+(2) [{…}, {…}]
+🖼️ Header - Getting user avatar: 
+🔄 Loading users from API...
+📡 API Response status: 200
+✅ Users loaded from API: 
+(2) [{…}, {…}]
+🖼️ Header - Getting user avatar: 
+🔄 Creating user: 
+Object {name: "Amanda Motta", email: "amanda@vendasimples.com.br", role: "user"}
+📡 Create user response status: 500
+📡 Response content-type: application/json; charset=utf-8
+📡 Raw response text (first 200 chars): {"error":"Failed to create user","details":"require is not defined"}
+📡 Parsed JSON response: 
+Object {error: "Failed to create user", details: "require is not defined"}
+❌ Create user API error: Failed to create user
+❌ Erro ao criar usuário: 
+Error {}

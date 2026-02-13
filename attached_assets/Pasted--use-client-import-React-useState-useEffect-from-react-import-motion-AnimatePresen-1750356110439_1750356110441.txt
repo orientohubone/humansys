@@ -1,0 +1,309 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { 
+  Zap, 
+  Shield, 
+  Rocket, 
+  Users, 
+  BarChart3, 
+  Globe,
+  Smartphone,
+  Database
+} from "lucide-react";
+
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
+interface FeatureCarouselProps {
+  features?: Feature[];
+  autoPlayInterval?: number;
+  className?: string;
+  title?: string;
+  subtitle?: string;
+}
+
+function FeatureCarousel({
+  features,
+  autoPlayInterval = 4000,
+  className,
+  title = "Funcionalidades Principais",
+  subtitle = "Descubra tudo o que nossa plataforma pode oferecer"
+}: FeatureCarouselProps) {
+  const defaultFeatures: Feature[] = [
+    {
+      id: "performance",
+      title: "Performance Otimizada",
+      description: "Sistema ultra-rápido com carregamento instantâneo e resposta em tempo real para máxima produtividade.",
+      icon: <Zap className="size-6" />,
+      color: "from-yellow-500 to-orange-500"
+    },
+    {
+      id: "security",
+      title: "Segurança Avançada",
+      description: "Proteção de dados de nível empresarial com criptografia end-to-end e autenticação multi-fator.",
+      icon: <Shield className="size-6" />,
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      id: "scalability",
+      title: "Escalabilidade Ilimitada",
+      description: "Cresça sem limites com nossa infraestrutura que se adapta automaticamente às suas necessidades.",
+      icon: <Rocket className="size-6" />,
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      id: "collaboration",
+      title: "Colaboração em Tempo Real",
+      description: "Trabalhe em equipe de forma sincronizada com ferramentas de colaboração integradas e intuitivas.",
+      icon: <Users className="size-6" />,
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      id: "analytics",
+      title: "Analytics Inteligente",
+      description: "Insights poderosos com dashboards personalizáveis e relatórios automatizados para decisões estratégicas.",
+      icon: <BarChart3 className="size-6" />,
+      color: "from-indigo-500 to-purple-500"
+    },
+    {
+      id: "integration",
+      title: "Integração Universal",
+      description: "Conecte-se com mais de 1000+ aplicações através de APIs robustas e webhooks personalizáveis.",
+      icon: <Globe className="size-6" />,
+      color: "from-teal-500 to-blue-500"
+    },
+    {
+      id: "mobile",
+      title: "Mobile First",
+      description: "Experiência nativa em dispositivos móveis com sincronização automática e modo offline.",
+      icon: <Smartphone className="size-6" />,
+      color: "from-rose-500 to-pink-500"
+    },
+    {
+      id: "database",
+      title: "Banco de Dados Robusto",
+      description: "Armazenamento confiável com backup automático, versionamento e recuperação instantânea de dados.",
+      icon: <Database className="size-6" />,
+      color: "from-amber-500 to-orange-500"
+    }
+  ];
+
+  const featureList = features || defaultFeatures;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (progress < 100) {
+        setProgress((prev) => prev + 100 / (autoPlayInterval / 100));
+      } else {
+        setCurrentIndex((prev) => (prev + 1) % featureList.length);
+        setProgress(0);
+      }
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [progress, featureList.length, autoPlayInterval]);
+
+  const handleFeatureClick = (index: number) => {
+    setCurrentIndex(index);
+    setProgress(0);
+  };
+
+  const currentFeature = featureList[currentIndex];
+
+  return (
+    <div className={cn("w-full max-w-6xl mx-auto p-6", className)}>
+      {/* Header */}
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+          {title}
+        </h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          {subtitle}
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* Feature List */}
+        <div className="space-y-4">
+          {featureList.map((feature, index) => (
+            <motion.div
+              key={feature.id}
+              className={cn(
+                "relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300",
+                index === currentIndex
+                  ? "border-primary bg-primary/5 shadow-lg"
+                  : "border-border bg-background hover:border-primary/50 hover:bg-muted/50"
+              )}
+              onClick={() => handleFeatureClick(index)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {/* Progress bar for current feature */}
+              {index === currentIndex && (
+                <motion.div
+                  className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-primary/60 rounded-b-lg"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.1 }}
+                />
+              )}
+
+              <div className="flex items-start gap-4">
+                <motion.div
+                  className={cn(
+                    "p-3 rounded-lg bg-gradient-to-br text-white",
+                    index === currentIndex ? currentFeature.color : "from-muted-foreground to-muted-foreground"
+                  )}
+                  animate={{
+                    scale: index === currentIndex ? 1.1 : 1,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {feature.icon}
+                </motion.div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className={cn(
+                    "text-lg font-semibold mb-2 transition-colors",
+                    index === currentIndex ? "text-primary" : "text-foreground"
+                  )}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+
+                {/* Active indicator */}
+                <motion.div
+                  className={cn(
+                    "w-3 h-3 rounded-full transition-all duration-300",
+                    index === currentIndex ? "bg-primary" : "bg-muted-foreground/30"
+                  )}
+                  animate={{
+                    scale: index === currentIndex ? 1.2 : 1,
+                  }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Feature Showcase */}
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              className="relative"
+              initial={{ opacity: 0, y: 20, rotateX: -10 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              exit={{ opacity: 0, y: -20, rotateX: 10 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              {/* Main showcase card */}
+              <div className="relative p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-background to-muted/30 shadow-2xl">
+                {/* Gradient background */}
+                <div className={cn(
+                  "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-10",
+                  currentFeature.color
+                )} />
+                
+                {/* Content */}
+                <div className="relative z-10">
+                  <motion.div
+                    className={cn(
+                      "inline-flex p-4 rounded-xl bg-gradient-to-br text-white mb-6",
+                      currentFeature.color
+                    )}
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    {React.cloneElement(currentFeature.icon as React.ReactElement, {
+                      className: "size-8"
+                    })}
+                  </motion.div>
+
+                  <h3 className="text-2xl font-bold mb-4 text-foreground">
+                    {currentFeature.title}
+                  </h3>
+                  
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    {currentFeature.description}
+                  </p>
+
+                  {/* Feature indicators */}
+                  <div className="flex gap-2">
+                    {featureList.map((_, index) => (
+                      <motion.div
+                        key={index}
+                        className={cn(
+                          "h-2 rounded-full transition-all duration-300",
+                          index === currentIndex ? "bg-primary flex-1" : "bg-muted-foreground/30 w-2"
+                        )}
+                        animate={{
+                          width: index === currentIndex ? "auto" : "8px"
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Decorative elements */}
+                <motion.div
+                  className="absolute -top-2 -right-2 w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-transparent"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 0.8, 0.5]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-gradient-to-br from-secondary/20 to-transparent"
+                  animate={{ 
+                    scale: [1.2, 1, 1.2],
+                    opacity: [0.3, 0.6, 0.3]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Navigation dots */}
+      <div className="flex justify-center gap-2 mt-8">
+        {featureList.map((_, index) => (
+          <button
+            key={index}
+            className={cn(
+              "w-3 h-3 rounded-full transition-all duration-300",
+              index === currentIndex 
+                ? "bg-primary scale-125" 
+                : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+            )}
+            onClick={() => handleFeatureClick(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function FeatureCarouselDemo() {
+  return (
+    <div className="min-h-screen bg-background py-20">
+      <FeatureCarousel />
+    </div>
+  );
+}
