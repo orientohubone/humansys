@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import { registerRoutes } from "../server/routes";
+import { initializeDatabase } from "../server/db";
 
 let appInitPromise: Promise<express.Express> | null = null;
 
@@ -30,6 +31,10 @@ async function getApp(): Promise<express.Express> {
 
       // Best-effort static uploads path. In Vercel this is ephemeral, but keeps compatibility.
       app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+
+      if (process.env.SKIP_DB_INIT !== "true") {
+        await initializeDatabase();
+      }
 
       await registerRoutes(app);
       return app;

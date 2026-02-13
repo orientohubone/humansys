@@ -38,6 +38,8 @@ import nodemailer from 'nodemailer';
 import { brainSysIAO } from "./brainsys";
 import * as strategicAI from "./services/strategicAI";
 
+const enableDevFallbacks = process.env.ENABLE_DEV_FALLBACKS === "true";
+
 // Enhanced error handler with systematic response formatting
 function createAPIResponse(data: any = null, error: string | null = null, status: number = 200) {
   const response = {
@@ -823,7 +825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (dbError) {
           console.error('❌ Database error for founder:', dbError);
-          if (process.env.NODE_ENV !== 'production') {
+          if (enableDevFallbacks) {
             const fallbackFounderUser = {
               id: '00000000-0000-0000-0000-000000000001',
               email: 'fernandoluizsouzaramalho@gmail.com',
@@ -890,7 +892,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(status).json(response);
     } catch (error) {
       console.error('❌ Error fetching user:', error);
-      if (process.env.NODE_ENV !== 'production') {
+      if (enableDevFallbacks) {
         const fallbackUser = {
           id: req.params.id,
           email: req.params.id === '00000000-0000-0000-0000-000000000001'
@@ -1440,7 +1442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const processes = await storage.getOnboardingProcesses(userId);
       res.json(processes);
     } catch (error) {
-      if (process.env.NODE_ENV !== "production") {
+      if (enableDevFallbacks) {
         console.warn("⚠️ Onboarding fallback in development mode (database unavailable)");
         return res.json([]);
       }

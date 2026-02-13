@@ -15,9 +15,11 @@ Configurar em `Project Settings > Environment Variables`:
 - `DATABASE_URL` (obrigatória)
 - `ANTHROPIC_API_KEY` (obrigatória para recursos de IA Anthropic)
 - `NODE_ENV=production`
+- `SKIP_DB_INIT=false` (recomendado para inicializar/verificar schema no boot serverless)
 
 Opcional:
 - `VITE_API_URL` (deixe vazio para usar mesmo domínio em produção)
+- `ENABLE_DEV_FALLBACKS=false` (recomendado em produção; quando `true`, ativa respostas mock de contingência)
 
 ## Build e output
 O projeto já está configurado com:
