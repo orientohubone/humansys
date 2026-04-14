@@ -626,145 +626,104 @@ export const FounderDashboardComponent = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-3 xs:space-y-4 sm:space-y-6 h-full overflow-y-auto">
-        {/* Header com Gamificação */}
-        <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 xs:gap-4">
-          <div className="min-w-0">
-            <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
-              <Crown className="h-6 xs:h-7 sm:h-8 w-6 xs:w-7 sm:w-8 text-yellow-500 flex-shrink-0" />
-              <span className="hidden xs:inline">Founder</span>
-              <span className="xs:hidden">Founder</span> Dashboard
-              <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-xs xs:text-sm h-6 xs:h-7">
-                Lv {gameElements.level}
+      <div className="space-y-6">
+
+        {/* ── Page Header ──────────────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight flex items-center gap-2.5">
+              <Crown className="h-7 w-7 text-yellow-500 flex-shrink-0" />
+              Founder Dashboard
+              <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-xs font-bold">
+                Nível {gameElements.level}
               </Badge>
             </h1>
-            <p className="text-xs xs:text-sm text-muted-foreground mt-1">
-              Métricas com IA preditiva
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Métricas estratégicas com predição por IA
             </p>
           </div>
-          <div className="flex flex-col xs:flex-row items-start xs:items-center gap-3 xs:gap-4 w-full xs:w-auto">
-            <div className="text-right text-xs xs:text-sm">
-              <p className="text-muted-foreground">XP Progress</p>
-              <Progress 
-                value={(gameElements.xp / gameElements.nextLevelXp) * 100} 
-                className="w-24 xs:w-32 h-1.5 xs:h-2"
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="hidden sm:block text-right">
+              <p className="text-xs text-muted-foreground">XP — Nível {gameElements.level}</p>
+              <Progress
+                value={(gameElements.xp / gameElements.nextLevelXp) * 100}
+                className="w-32 h-2 mt-1"
               />
               <p className="text-xs text-muted-foreground mt-0.5">
-                {gameElements.xp}/{gameElements.nextLevelXp}
+                {gameElements.xp.toLocaleString()} / {gameElements.nextLevelXp.toLocaleString()}
               </p>
             </div>
-            <Button 
+            <Button
               variant="outline"
               size="sm"
-              className="text-xs xs:text-sm h-8 xs:h-9 w-full xs:w-auto"
               onClick={() => triggerDepartmentAlert('Geral', 'Reunião Estratégica')}
             >
-              <Bell className="h-3 xs:h-4 w-3 xs:w-4 mr-1 xs:mr-2 flex-shrink-0" />
-              <span className="hidden xs:inline">Alertar Equipe</span>
-              <span className="xs:hidden">Alertar</span>
+              <Bell className="h-4 w-4 mr-2" />
+              Alertar Equipe
             </Button>
           </div>
         </div>
 
-        {/* Alertas Inteligentes */}
+        {/* ── Smart Alerts ─────────────────────────────────────────────── */}
         {alerts.length > 0 && (
           <div className="space-y-2">
             {alerts.map((alert, index) => (
-              <Alert key={index} className={alert.type === 'warning' ? 'border-orange-500' : ''}>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>{alert.message}</AlertDescription>
+              <Alert key={index} className={alert.type === 'warning' ? 'border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20' : ''}>
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="ml-2">{alert.message}</AlertDescription>
               </Alert>
             ))}
           </div>
         )}
 
-        {/* KPIs Principais com IA */}
-        <div className="grid gap-2 xs:gap-4 sm:gap-6 grid-cols-2 xs:grid-cols-2 sm:grid-cols-4">
-          {/* MRR Card */}
-          <button onClick={() => setExpandedKPI('mrr')} className="text-left">
-            <Card className="relative overflow-hidden cursor-pointer hover:shadow-md dark:hover:shadow-md/50 transition-shadow">
-              <div className="absolute top-0 right-0 w-12 xs:w-16 sm:w-20 h-12 xs:h-16 sm:h-20 bg-gradient-to-br from-green-400/20 to-transparent"></div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-2 xs:p-4">
-                <CardTitle className="hidden xs:inline text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300">MRR</CardTitle>
-                <DollarSign className="xs:hidden h-5 w-5 text-green-600 dark:text-green-400" />
-                <DollarSign className="hidden xs:inline h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-              </CardHeader>
-              <CardContent className="p-2 xs:p-4 pt-0">
-                <div className="text-base xs:text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  R$ {(metrics.mrr / 1000).toFixed(0)}k
-                </div>
-                <div className="hidden xs:flex items-center space-x-1.5 text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  <span>+{((metrics.newMrr + metrics.expansionMrr - metrics.churnedMrr) / metrics.mrr * 100).toFixed(1)}%</span>
-                </div>
-              </CardContent>
-            </Card>
-          </button>
-
-          {/* Churn Card */}
-          <button onClick={() => setExpandedKPI('churn')} className="text-left">
-            <Card className="relative overflow-hidden cursor-pointer hover:shadow-md dark:hover:shadow-md/50 transition-shadow">
-              <div className="absolute top-0 right-0 w-12 xs:w-16 sm:w-20 h-12 xs:h-16 sm:h-20 bg-gradient-to-br from-blue-400/20 to-transparent"></div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-2 xs:p-4">
-                <CardTitle className="hidden xs:inline text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300">Churn</CardTitle>
-                <Brain className="xs:hidden h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <Brain className="hidden xs:inline h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-              </CardHeader>
-              <CardContent className="p-2 xs:p-4 pt-0">
-                <div className="text-base xs:text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  {metrics.churnRate.toFixed(1)}%
-                </div>
-                <div className="hidden xs:flex items-center space-x-1.5 text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  {aiPredictions.churnRisk.trend === 'down' ? (
-                    <ChevronDown className="h-3 w-3 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronUp className="h-3 w-3 text-red-600 dark:text-red-400 flex-shrink-0" />
-                  )}
-                  <span>{aiPredictions.churnRisk.confidence}% conf</span>
-                </div>
-              </CardContent>
-            </Card>
-          </button>
-
-          {/* LTV/CAC Card */}
-          <button onClick={() => setExpandedKPI('ltv')} className="text-left">
-            <Card className="relative overflow-hidden cursor-pointer hover:shadow-md dark:hover:shadow-md/50 transition-shadow">
-              <div className="absolute top-0 right-0 w-12 xs:w-16 sm:w-20 h-12 xs:h-16 sm:h-20 bg-gradient-to-br from-purple-400/20 to-transparent"></div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-2 xs:p-4">
-                <CardTitle className="hidden xs:inline text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300">LTV/CAC</CardTitle>
-                <Target className="xs:hidden h-5 w-5 text-purple-600 dark:text-purple-400" />
-                <Target className="hidden xs:inline h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-              </CardHeader>
-              <CardContent className="p-2 xs:p-4 pt-0">
-                <div className="text-base xs:text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  {(metrics.ltv / metrics.cac).toFixed(1)}x
-                </div>
-                <div className="hidden xs:inline text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  Razão ideal
-                </div>
-              </CardContent>
-            </Card>
-          </button>
-
-          {/* Runway Card */}
-          <button onClick={() => setExpandedKPI('runway')} className="text-left">
-            <Card className="relative overflow-hidden cursor-pointer hover:shadow-md dark:hover:shadow-md/50 transition-shadow">
-              <div className="absolute top-0 right-0 w-12 xs:w-16 sm:w-20 h-12 xs:h-16 sm:h-20 bg-gradient-to-br from-orange-400/20 to-transparent"></div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-2 xs:p-4">
-                <CardTitle className="hidden xs:inline text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300">Runway</CardTitle>
-                <Clock className="xs:hidden h-5 w-5 text-orange-600 dark:text-orange-400" />
-                <Clock className="hidden xs:inline h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-              </CardHeader>
-              <CardContent className="p-2 xs:p-4 pt-0">
-                <div className="text-base xs:text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  {metrics.runway}m
-                </div>
-                <div className="hidden xs:inline text-xs text-muted-foreground dark:text-gray-400 mt-2">
-                  Meses
-                </div>
-              </CardContent>
-            </Card>
-          </button>
+        {/* ── KPI Top Row ───────────────────────────────────────────────── */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              id: 'mrr', label: 'MRR', sublabel: 'Receita Recorrente Mensal',
+              value: `R$ ${(metrics.mrr / 1000).toFixed(0)}k`,
+              trend: `+${((metrics.newMrr + metrics.expansionMrr - metrics.churnedMrr) / metrics.mrr * 100).toFixed(1)}%`,
+              trendUp: true, icon: DollarSign, color: 'text-emerald-500', accent: 'from-emerald-500/10'
+            },
+            {
+              id: 'churn', label: 'Churn Rate', sublabel: `Conf. IA ${aiPredictions.churnRisk.confidence}%`,
+              value: `${metrics.churnRate.toFixed(1)}%`,
+              trend: aiPredictions.churnRisk.trend === 'down' ? '↓ Diminuindo' : '↑ Aumentando',
+              trendUp: aiPredictions.churnRisk.trend === 'down', icon: Brain, color: 'text-blue-500', accent: 'from-blue-500/10'
+            },
+            {
+              id: 'ltv', label: 'LTV / CAC', sublabel: 'Razão ideal ≥ 3x',
+              value: `${(metrics.ltv / metrics.cac).toFixed(1)}x`,
+              trend: (metrics.ltv / metrics.cac) >= 3 ? '✓ Saudável' : '⚠ Atenção',
+              trendUp: (metrics.ltv / metrics.cac) >= 3, icon: Target, color: 'text-purple-500', accent: 'from-purple-500/10'
+            },
+            {
+              id: 'runway', label: 'Runway', sublabel: `Burn R$ ${(metrics.burnRate/1000).toFixed(0)}k/mês`,
+              value: `${metrics.runway} meses`,
+              trend: metrics.runway >= 18 ? '✓ Seguro' : '⚠ Atenção',
+              trendUp: metrics.runway >= 18, icon: Clock, color: 'text-orange-500', accent: 'from-orange-500/10'
+            },
+          ].map(kpi => {
+            const Icon = kpi.icon;
+            return (
+              <button key={kpi.id} onClick={() => setExpandedKPI(kpi.id)} className="text-left">
+                <Card className="relative overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${kpi.accent} to-transparent opacity-0 group-hover:opacity-100 transition-opacity`} />
+                  <CardContent className="p-4 relative">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{kpi.label}</span>
+                      <Icon className={`h-4 w-4 ${kpi.color}`} />
+                    </div>
+                    <div className="text-2xl font-bold">{kpi.value}</div>
+                    <div className={`text-xs mt-1 font-medium ${kpi.trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                      {kpi.trend}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{kpi.sublabel}</div>
+                  </CardContent>
+                </Card>
+              </button>
+            );
+          })}
         </div>
 
         {/* Modais de Expansão dos KPIs */}
@@ -855,42 +814,38 @@ export const FounderDashboardComponent = () => {
           </DialogContent>
         </Dialog>
 
-        <Tabs defaultValue="overview" className="space-y-2 xs:space-y-4 sm:space-y-6 flex flex-col h-full">
-          <div className="w-full bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50 rounded-lg p-1.5 xs:p-3">
-            <TabsList className="flex flex-nowrap gap-1 xs:gap-2 h-auto justify-start bg-transparent overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
-              <TabsTrigger value="overview" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Geral
-              </TabsTrigger>
-              <TabsTrigger value="users" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Usuários
-              </TabsTrigger>
-              <TabsTrigger value="revenue" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Receita
-              </TabsTrigger>
-              <TabsTrigger value="ai-insights" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                IA
-              </TabsTrigger>
-              <TabsTrigger value="gamification" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Gamif.
-              </TabsTrigger>
-              <TabsTrigger value="alerts" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Alertas
-              </TabsTrigger>
-              <TabsTrigger value="pitch" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Pitch
-              </TabsTrigger>
-              <TabsTrigger value="creatives" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Criativos
-              </TabsTrigger>
-              <TabsTrigger value="documentation" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Docs
-              </TabsTrigger>
-              <TabsTrigger value="versions" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Versões
-              </TabsTrigger>
-              <TabsTrigger value="strategy" className="text-xs xs:text-sm px-2.5 xs:px-3.5 py-1.5 xs:py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors data-[state=active]:bg-emerald-600 dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 whitespace-nowrap flex-shrink-0">
-                Estratégia
-              </TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-6">
+          {/* ── Tab Navigation ─────────────────────────────────────────────── */}
+          <div className="border-b border-border">
+            <TabsList className="flex flex-nowrap gap-0 h-auto justify-start bg-transparent overflow-x-auto [-webkit-overflow-scrolling:touch] w-full rounded-none p-0">
+              {[
+                { value: 'overview',       short: 'Geral',     full: 'Visão Geral' },
+                { value: 'users',          short: 'Usuários',  full: 'Usuários' },
+                { value: 'revenue',        short: 'Receita',   full: 'Receita' },
+                { value: 'ai-insights',    short: 'IA',        full: 'IA & Predições' },
+                { value: 'gamification',   short: 'Gamif.',    full: 'Gamificação' },
+                { value: 'alerts',         short: 'Alertas',   full: 'Alertas' },
+                { value: 'pitch',          short: 'Pitch',     full: 'Pitch Deck' },
+                { value: 'creatives',      short: 'Criativos', full: 'Criativos' },
+                { value: 'documentation', short: 'Docs',      full: 'Documentação' },
+                { value: 'versions',       short: 'Versões',   full: 'Versões' },
+                { value: 'strategy',       short: 'Strat.',    full: 'Estratégia' },
+              ].map(tab => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="
+                    relative flex-shrink-0 px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium whitespace-nowrap
+                    text-muted-foreground border-b-2 border-transparent rounded-none bg-transparent
+                    hover:text-foreground hover:border-border
+                    data-[state=active]:text-foreground data-[state=active]:border-emerald-500
+                    transition-all duration-200
+                  "
+                >
+                  <span className="md:hidden">{tab.short}</span>
+                  <span className="hidden md:inline">{tab.full}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
 

@@ -8,3 +8,7 @@ vite.config.ts.*
 .config
 
 .git_old_*
+
+.env
+.env.local
+.env.production

@@ -71,7 +71,11 @@ interface MenuCategory {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(() => {
+    // Respect user's previous preference; default to expanded on desktop
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved !== null ? saved === 'true' : false;
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isFounder, setIsFounder] = useState(false);
   const { user, signOut } = useAuth();
@@ -100,10 +104,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     }
   }, [user?.id, user?.email, user?.role]);
 
-  // Update CSS variable for sidebar width globally
+  // Update CSS variable for sidebar width globally and persist preference
   useEffect(() => {
     const sidebarWidth = collapsed ? '80px' : '256px';
     document.documentElement.style.setProperty('--sidebar-width', sidebarWidth);
+    localStorage.setItem('sidebar-collapsed', String(collapsed));
   }, [collapsed]);
 
   // Listen for mobile menu toggle events

@@ -26,7 +26,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   return (
     <div className="w-full min-h-screen bg-background overflow-x-hidden">
-      <UpdateBanner />
       <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-950">
         <Sidebar />
         <div 
@@ -39,6 +38,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-1.5 sm:p-2 md:p-3 lg:p-4 xl:p-6">
             <div className="w-full max-w-none mx-auto">
               <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl shadow-2xl shadow-gray-200/20 dark:shadow-gray-900/20 border border-white/20 dark:border-gray-800/20 p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 min-h-screen sm:min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-8rem)]">
+                <UpdateBanner />
                 <TrialBanner />
                 {children}
               </div>

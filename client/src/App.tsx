@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import AppRouter from '@/components/auth/AppRouter';
-import DebugPanel from '@/components/debug/debugPanel';
 import { AppProviders } from './contexts/AppProviders';
 import { GlobalIAAssistant } from '@/components/common/GlobalIAAssistant';
 
@@ -18,7 +17,6 @@ function App() {
             <AppRouter />
             <GlobalIAAssistant />
             <Toaster />
-            <DebugPanel />
           </BrowserRouter>
         </AppProviders>
       </GlobalErrorBoundary>
