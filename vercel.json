@@ -3,22 +3,18 @@
   "installCommand": "npm install --include=dev",
   "buildCommand": "npm run build:client",
   "outputDirectory": "dist/public",
-  "functions": {
-    "api/[...all].ts": {
-      "maxDuration": 30
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "^/api/(.*)$",
-      "dest": "/api/[...all].ts"
+      "source": "/api/(.*)",
+      "destination": "/api/[...all].ts"
     },
     {
-      "handle": "filesystem"
+      "source": "/uploads/(.*)",
+      "destination": "/api/[...all].ts"
     },
     {
-      "src": "^/(.*)$",
-      "dest": "/index.html"
+      "source": "/((?!api/|uploads/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }
