@@ -1,4 +1,4 @@
-const CACHE_NAME = 'humansys-v4.0.1';
+const CACHE_NAME = 'humansys-v4.0.2';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -67,55 +67,58 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip API calls for caching (let them go through normally)
-  if (event.request.url.includes('/api/')) {
-    return;
-  }
-
-  // Skip JavaScript and CSS files - let browser handle versioning
-  if (event.request.url.includes('/assets/') && (event.request.url.endsWith('.js') || event.request.url.endsWith('.css'))) {
-    return;
-  }
-
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+    (async () => {
+      const request = event.request;
+
+      if (request.mode === 'navigate') {
+        try {
+          return await fetch(request);
+        } catch (error) {
+          console.log('Navigation fetch error:', error);
+          const cachedShell = await caches.match('/index.html');
+          if (cachedShell) return cachedShell;
+          return new Response('Offline', {
+            status: 503,
+            statusText: 'Offline'
+          });
         }
+      }
 
-        return fetch(event.request).then(
-          (response) => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+      if (request.url.includes('/api/')) {
+        try {
+          return await fetch(request);
+        } catch (error) {
+          console.log('API fetch error:', error);
+          return new Response(JSON.stringify({ error: 'Network error' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+          });
+        }
+      }
 
-            // Clone the response
-            const responseToCache = response.clone();
+      const cached = await caches.match(request);
+      if (cached) return cached;
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              })
-              .catch((error) => {
-                console.log('Cache put error:', error);
-              });
-
-            return response;
-          }
-        ).catch((error) => {
-          console.log('Fetch error:', error);
-          // Return cached response if fetch fails
-          return caches.match(event.request);
+      try {
+        const response = await fetch(request);
+        if (response && response.ok && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseToCache).catch((error) => {
+              console.log('Cache put error:', error);
+            });
+          });
+        }
+        return response;
+      } catch (error) {
+        console.log('Fetch error:', error);
+        return new Response('', {
+          status: 504,
+          statusText: 'Gateway Timeout'
         });
-      })
-      .catch((error) => {
-        console.log('Cache match error:', error);
-        // Fallback to network
-        return fetch(event.request);
-      })
+      }
+    })()
   );
 });
 

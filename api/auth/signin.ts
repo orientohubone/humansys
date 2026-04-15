@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import { randomUUID } from "crypto";
-import { db } from "../../server/db";
-import { users } from "../../shared/schema";
-import { eq } from "drizzle-orm";
+import { createUser, findUserByEmail } from "./db";
 
 function sendJson(res: Response, status: number, body: any) {
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
@@ -26,35 +24,26 @@ export default async function handler(req: Request, res: Response) {
     const normalizedEmail = String(email).toLowerCase().trim();
 
     if (normalizedEmail === "fernandoluizsouzaramalho@gmail.com") {
-      const [existingFounder] = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, normalizedEmail));
-
-      let founderUser = existingFounder;
+      let founderUser = await findUserByEmail(normalizedEmail);
 
       if (!founderUser) {
-        const [createdFounder] = await db
-          .insert(users)
-          .values({
-            id: randomUUID(),
-            email: normalizedEmail,
-            password,
-            full_name: "Fernando Ramalho",
-            role: "founder",
-            status: "active",
-            is_founder: true,
-            tenant_id: randomUUID(),
-            plan_type: "enterprise",
-            total_credits: 999999,
-            used_credits: 0,
-            remaining_credits: 999999,
-            email_verified: true,
-            created_at: new Date(),
-            updated_at: new Date(),
-          } as any)
-          .returning();
-        founderUser = createdFounder;
+        founderUser = await createUser({
+          id: randomUUID(),
+          email: normalizedEmail,
+          password,
+          full_name: "Fernando Ramalho",
+          role: "founder",
+          status: "active",
+          is_founder: true,
+          tenant_id: randomUUID(),
+          plan_type: "enterprise",
+          total_credits: 999999,
+          used_credits: 0,
+          remaining_credits: 999999,
+          email_verified: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
       }
 
       const { password: _, ...userData } = founderUser;
@@ -64,7 +53,7 @@ export default async function handler(req: Request, res: Response) {
       });
     }
 
-    const [user] = await db.select().from(users).where(eq(users.email, normalizedEmail));
+    const user = await findUserByEmail(normalizedEmail);
     if (user && user.password === password) {
       const { password: _, ...userData } = user;
       return sendJson(res, 200, {

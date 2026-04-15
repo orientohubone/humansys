@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import { randomUUID } from "crypto";
-import { db } from "../../server/db";
-import { users } from "../../shared/schema";
-import { eq } from "drizzle-orm";
+import { createUser, findUserByEmail } from "./db";
 
 function sendJson(res: Response, status: number, body: any) {
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
@@ -25,30 +23,27 @@ export default async function handler(req: Request, res: Response) {
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
-    const [existingUser] = await db.select().from(users).where(eq(users.email, normalizedEmail));
+    const existingUser = await findUserByEmail(normalizedEmail);
 
     if (existingUser) {
       return sendJson(res, 409, { error: "Este email já está cadastrado" });
     }
 
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        id: randomUUID(),
-        email: normalizedEmail,
-        password,
-        full_name: String(full_name).trim(),
-        role: "user",
-        status: "active",
-        plan_type: "trial",
-        total_credits: 1000,
-        used_credits: 0,
-        remaining_credits: 1000,
-        trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        created_at: new Date(),
-        updated_at: new Date(),
-      } as any)
-      .returning();
+    const newUser = await createUser({
+      id: randomUUID(),
+      email: normalizedEmail,
+      password,
+      full_name: String(full_name).trim(),
+      role: "user",
+      status: "active",
+      plan_type: "trial",
+      total_credits: 1000,
+      used_credits: 0,
+      remaining_credits: 1000,
+      trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
 
     const { password: _, ...userResponse } = newUser;
     return sendJson(res, 201, {
