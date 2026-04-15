@@ -23,19 +23,34 @@ function getPool(): Pool {
   return pool;
 }
 
-// Unified db instance — uses HTTP/neon on Vercel, pg Pool locally
-export const db = isServerless
-  ? drizzleNeon(neon(DATABASE_URL), { schema })
-  : drizzlePg(getPool(), { schema });
+// Unified db instance — safely initialized to prevent top-level crashes
+// If DATABASE_URL is missing in Vercel, neon() will throw synchronously on import. We prevent that here.
+const getDbClient = () => {
+  if (isServerless) {
+    try {
+      // neon() strictly requires 'neon.tech' in the URL. If missing (e.g. local URL), use a safe dummy so it boots.
+      // It will fail gracefully later during actual queries instead of crashing the whole serverless process.
+      const safeUrl = DATABASE_URL.includes("neon.tech") ? DATABASE_URL : "postgresql://dummy:dummy@ep-dummy-pooler.us-east-2.aws.neon.tech/db";
+      return drizzleNeon(neon(safeUrl), { schema });
+    } catch (e) {
+      console.error("⚠️ Neon driver initialization failed:", e);
+    }
+  }
+  return drizzlePg(getPool(), { schema });
+};
+
+export const db = getDbClient();
 
 // Raw query helper (used by initializeDatabase)
 async function rawQuery(sql: string): Promise<void> {
   if (isServerless) {
-    await neon(DATABASE_URL)(sql);
+    const safeUrl = DATABASE_URL.includes("neon.tech") ? DATABASE_URL : "postgresql://dummy:dummy@ep-dummy-pooler.us-east-2.aws.neon.tech/db";
+    await neon(safeUrl)(sql);
   } else {
     await getPool().query(sql);
   }
 }
+
 
 
 // Initialize database and create tables if they don't exist

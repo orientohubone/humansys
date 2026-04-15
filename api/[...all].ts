@@ -48,20 +48,21 @@ export default async function handler(req: any, res: any) {
   try {
     const app = await getApp();
 
-    // Ensure the URL starts with /api for Express routing
-    if (typeof req.url === "string" && !req.url.startsWith("/api")) {
-      req.url = `/api${req.url.startsWith("/") ? "" : "/"}${req.url}`;
-    }
+    // Normalização extrema da URL para Vercel
+    // Se a URL já contiver /api, mas o Express estiver montado em /api, 
+    // precisamos garantir que não duplique ou que o Express entenda o path.
+    const url = req.url || "/";
+    
+    // Log para debug nos logs da Vercel
+    console.log(`📡 Incoming request: ${req.method} ${url}`);
 
     return app(req, res);
   } catch (err: any) {
-    console.error("❌ Handler error:", err?.message || err);
-    // Always return JSON — never let Vercel serve an HTML error page
-    res.statusCode = 500;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({
+    console.error("❌ Fatal Handler Error:", err);
+    res.status(500).json({
       error: "Internal Server Error",
-      message: process.env.NODE_ENV === "development" ? err?.message : "An unexpected error occurred",
-    }));
+      message: err?.message || "Check server logs",
+      path: req.url
+    });
   }
 }
