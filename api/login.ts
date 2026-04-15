@@ -1,1 +1,1 @@
-export { default } from "./auth/signin";
+export { default } from "./auth/signin.js";

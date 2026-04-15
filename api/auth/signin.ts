@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { randomUUID } from "crypto";
-import { createUser, findUserByEmail } from "./db";
+import { createUser, findUserByEmail } from "./db.js";
 
 function sendJson(res: Response, status: number, body: any) {
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
