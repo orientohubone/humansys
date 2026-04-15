@@ -35,10 +35,17 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import nodemailer from 'nodemailer';
-import { brainSysIAO } from "./brainsys";
-import * as strategicAI from "./services/strategicAI";
 
 const enableDevFallbacks = process.env.ENABLE_DEV_FALLBACKS === "true";
+
+async function getBrainSysIAO() {
+  const mod = await import("./brainsys");
+  return mod.brainSysIAO;
+}
+
+async function getStrategicAI() {
+  return import("./services/strategicAI");
+}
 
 // Enhanced error handler with systematic response formatting
 function createAPIResponse(data: any = null, error: string | null = null, status: number = 200) {
@@ -1170,12 +1177,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Registrar ação no BrainSys IAO
       try {
-        await brainSysIAO.recordUserAction(userId, 'feedback_given', {
-          feedback_id: feedback.id,
-          feedback_type: feedbackData.type,
-          rating: feedbackData.rating,
-          urgent: feedbackData.urgent
-        });
+        if (process.env.ENABLE_BRAINSYS === "true") {
+          const brainSysIAO = await getBrainSysIAO();
+          await brainSysIAO.recordUserAction(userId, 'feedback_given', {
+            feedback_id: feedback.id,
+            feedback_type: feedbackData.type,
+            rating: feedbackData.rating,
+            urgent: feedbackData.urgent
+          });
+        }
       } catch (brainSysError) {
         console.warn('⚠️ Erro ao registrar no BrainSys:', brainSysError);
       }
@@ -1746,13 +1756,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Registrar login no BrainSys IAO
+      // Registrar login no BrainSys IAO apenas quando habilitado.
       try {
-        await brainSysIAO.recordUserAction(user.id, 'login', {
-          timestamp: new Date(),
-          user_agent: req.headers['user-agent'],
-          ip_address: req.ip
-        });
+        if (process.env.ENABLE_BRAINSYS === "true") {
+          const brainSysIAO = await getBrainSysIAO();
+          await brainSysIAO.recordUserAction(user.id, 'login', {
+            timestamp: new Date(),
+            user_agent: req.headers['user-agent'],
+            ip_address: req.ip
+          });
+        }
       } catch (brainSysError) {
         console.warn('⚠️ Erro ao registrar login no BrainSys:', brainSysError);
       }
@@ -1849,6 +1862,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // BrainSys IAO endpoints
   app.post('/api/brainsys/initialize', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       await brainSysIAO.initialize();
       res.json({ success: true, message: 'BrainSys IAO inicializado com sucesso' });
     } catch (error) {
@@ -1862,6 +1876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/brainsys/status', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const status = await brainSysIAO.getSystemStatus();
       res.json(status);
     } catch (error) {
@@ -1872,6 +1887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/brainsys/analyze-entity', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const { entityId, context } = req.body;
 
       if (!entityId || !context) {
@@ -1890,6 +1906,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/brainsys/analyze-team', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const { teamId } = req.body;
 
       if (!teamId) {
@@ -1908,6 +1925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/brainsys/record-action', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const { userId, actionType, actionData } = req.body;
 
       if (!userId || !actionType) {
@@ -1926,6 +1944,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/brainsys/insights/:entityId', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const { entityId } = req.params;
       const { context = 'PERFORMANCE_REVIEW' } = req.query;
 
@@ -1941,6 +1960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/brainsys/memory-insights', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const memory = brainSysIAO.getMemory();
       const insights = memory.getMemoryInsights();
       res.json(insights);
@@ -1954,6 +1974,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/brainsys/patterns/:entityId', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const { entityId } = req.params;
       const memory = brainSysIAO.getMemory();
       const patterns = memory.getEntityPatterns(entityId);
@@ -1968,6 +1989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/brainsys/feedback-metrics', async (req: Request, res: Response) => {
     try {
+      const brainSysIAO = await getBrainSysIAO();
       const feedbackLoop = brainSysIAO.getFeedbackLoop();
       const metrics = feedbackLoop.getSystemMetrics();
       const adaptationHistory = feedbackLoop.getAdaptationHistory().slice(0, 10);
@@ -2912,6 +2934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       if (!context) {
         return res.status(404).json({ error: "Strategic context not found. Please configure it first." });
@@ -2931,6 +2954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       const positions = await storage.getOrgChartPositions(auth.tenantId!);
       
@@ -2952,6 +2976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       if (!context) {
         return res.status(404).json({ error: "Strategic context not found" });
@@ -2972,6 +2997,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       const metrics = await storage.getLatestHealthMetrics(auth.tenantId!);
       const alerts = await storage.getActiveAlerts(auth.tenantId!);
@@ -2994,6 +3020,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       const metrics = await storage.getLatestHealthMetrics(auth.tenantId!);
       
@@ -3015,6 +3042,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       const position = await storage.getOrgChartPosition(req.params.positionId, auth.tenantId!);
       
@@ -3037,6 +3065,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       const positions = await storage.getOrgChartPositions(auth.tenantId!);
       
@@ -3058,6 +3087,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!auth.valid) return;
     
     try {
+      const strategicAI = await getStrategicAI();
       const context = await storage.getStrategicContext(auth.tenantId!);
       const position = await storage.getOrgChartPosition(req.params.positionId, auth.tenantId!);
       const profile = await storage.getCompetencyProfile(req.params.positionId, auth.tenantId!);
