@@ -119,15 +119,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Load profile data to get the avatar
       try {
-        const profileResponse = await fetch(`/api/users/${userData.id}`);
+        const profileResponse = await fetch(`/api/profile/${userData.id}`);
 
         if (profileResponse.ok) {
           const result = await readApiResponse(profileResponse);
-          if (result.success && result.data.avatar_url) {
+          const avatarUrl = result.data?.avatar_url || result.avatar_url;
+          if (avatarUrl) {
             userData = {
               ...userData,
-              avatar_url: result.data.avatar_url,
-              full_name: result.data.full_name || userData.full_name
+              avatar_url: avatarUrl,
+              full_name: result.data?.full_name || result.full_name || userData.full_name
             };
             console.log('✅ Avatar and profile loaded from database');
           }

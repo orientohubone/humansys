@@ -129,9 +129,9 @@ export const Profile: React.FC = () => {
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-4">
               <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
-                <Avatar className="w-32 h-32">
+                  <Avatar className="w-32 h-32">
                   <AvatarImage 
-                    src={profileData?.avatar_url ? `${profileData.avatar_url}?v=${new Date(profileData.updated_at || Date.now()).getTime()}` : '/placeholder-avatar.png'} 
+                    src={profileData?.avatar_url ? `${profileData.avatar_url}?v=${new Date(profileData.updated_at || Date.now()).getTime()}` : '/placeholder.svg'} 
                     alt="Avatar do usuário"
                     className="object-cover"
                   />

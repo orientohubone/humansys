@@ -14,6 +14,8 @@ interface UserProfile {
   bio?: string;
   role?: string;
   status?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface UpdateUserData {
@@ -25,6 +27,27 @@ interface UpdateUserData {
   department?: string;
   bio?: string;
   avatar_url?: string;
+}
+
+function normalizeProfileResponse(result: any, fallbackId: string): UserProfile {
+  const data = result?.data ?? result;
+
+  return {
+    id: data?.id || fallbackId,
+    email: data?.email || '',
+    full_name: data?.full_name || '',
+    position: data?.position || '',
+    company_name: data?.company_name || '',
+    company_cnpj: data?.company_cnpj || '',
+    avatar_url: data?.avatar_url || '',
+    phone: data?.phone || '',
+    department: data?.department || '',
+    bio: data?.bio || '',
+    role: data?.role || '',
+    status: data?.status || '',
+    created_at: data?.created_at,
+    updated_at: data?.updated_at,
+  };
 }
 
 export function useUserProfile(userId: string) {
@@ -42,20 +65,21 @@ export function useUserProfile(userId: string) {
     queryFn: async () => {
       console.log('🔍 Fetching user profile for:', userId);
       
-      const response = await fetch(`/api/users/${userId}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user: ${response.status}`);
-      }
-      
+      const response = await fetch(`/api/profile/${userId}`);
       const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ User profile fetched:', result.data);
-        return result.data;
-      } else {
-        throw new Error(result.error || 'Failed to fetch user');
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.warn('⚠️ User profile not found, returning empty profile');
+          return normalizeProfileResponse({ id: userId }, userId);
+        }
+
+        throw new Error(result?.error || `Failed to fetch user: ${response.status}`);
       }
+
+      const profile = normalizeProfileResponse(result, userId);
+      console.log('✅ User profile fetched:', profile);
+      return profile;
     },
     enabled: !!userId,
   });
@@ -65,25 +89,21 @@ export function useUserProfile(userId: string) {
     mutationFn: async (data: UpdateUserData) => {
       console.log('📝 Updating user profile:', data);
       
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/api/profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to update user: ${response.status}`);
-      }
-      
+
       const result = await response.json();
-      
-      if (result.success) {
-        return result.data;
-      } else {
-        throw new Error(result.error || 'Failed to update user');
+
+      if (!response.ok) {
+        throw new Error(result?.error || `Failed to update user: ${response.status}`);
       }
+
+      return normalizeProfileResponse(result, userId);
     },
     onSuccess: (updatedUser) => {
       console.log('✅ User profile updated:', updatedUser);
@@ -115,24 +135,26 @@ export function useUserProfile(userId: string) {
       const formData = new FormData();
       formData.append('avatar', file);
       
-      const response = await fetch(`/api/users/${userId}/avatar`, {
+      const response = await fetch('/api/upload-avatar', {
         method: 'POST',
         body: formData,
       });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to upload avatar: ${response.status}`);
-      }
-      
+
       const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ Avatar uploaded:', result.data.avatar_url);
+
+      if (!response.ok) {
+        throw new Error(result?.error || `Failed to upload avatar: ${response.status}`);
+      }
+
+      const avatarUrl = result?.avatar_url || result?.data?.avatar_url;
+
+      if (avatarUrl) {
+        console.log('✅ Avatar uploaded:', avatarUrl);
         
         // Atualizar cache com nova URL do avatar
         queryClient.setQueryData(['user', userId], (oldData: UserProfile | undefined) => {
           if (oldData) {
-            return { ...oldData, avatar_url: result.data.avatar_url };
+            return { ...oldData, avatar_url: avatarUrl };
           }
           return oldData;
         });
@@ -140,10 +162,10 @@ export function useUserProfile(userId: string) {
         // Invalidar cache para garantir sincronização
         queryClient.invalidateQueries({ queryKey: ['user', userId] });
         
-        return result.data.avatar_url;
-      } else {
-        throw new Error(result.error || 'Failed to upload avatar');
+        return avatarUrl;
       }
+
+      throw new Error(result?.error || 'Failed to upload avatar');
     } catch (error) {
       console.error('❌ Error uploading avatar:', error);
       throw error;
