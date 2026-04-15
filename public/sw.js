@@ -1,4 +1,4 @@
-const CACHE_NAME = 'humansys-v4.0.0';
+const CACHE_NAME = 'humansys-v4.0.1';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -7,17 +7,31 @@ const urlsToCache = [
   '/icon-512x512.png'
 ];
 
-// Install event - FORCE ACTIVATE IMMEDIATELY
+// Install event - cache only what actually exists so a single missing asset
+// cannot break the whole service worker installation.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('🔄 SW v4: Cache opened');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('✅ SW v4: Files cached');
-        // Force activation immediately
+      .then(async (cache) => {
+        console.log('🔄 SW v4.0.1: Cache opened');
+        const results = await Promise.allSettled(
+          urlsToCache.map(async (url) => {
+            try {
+              const response = await fetch(url, { cache: 'no-cache' });
+              if (response.ok) {
+                await cache.put(url, response.clone());
+                return true;
+              }
+              console.warn('⚠️ SW skipped non-200 asset:', url, response.status);
+              return false;
+            } catch (error) {
+              console.warn('⚠️ SW skipped missing asset:', url, error);
+              return false;
+            }
+          })
+        );
+        const cachedCount = results.filter(result => result.status === 'fulfilled' && result.value === true).length;
+        console.log(`✅ SW v4.0.1: Cached ${cachedCount}/${urlsToCache.length} assets`);
         return self.skipWaiting();
       })
   );
@@ -25,7 +39,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - CLEAR ALL OLD CACHES
 self.addEventListener('activate', (event) => {
-  console.log('🧹 SW v4: Cleaning old caches...');
+  console.log('🧹 SW v4.0.1: Cleaning old caches...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       console.log('📋 Found caches:', cacheNames);
@@ -39,7 +53,7 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-      console.log('✅ SW v4: Old caches cleared, claiming all clients');
+      console.log('✅ SW v4.0.1: Old caches cleared, claiming all clients');
       // Take control of all pages
       return self.clients.claim();
     })
