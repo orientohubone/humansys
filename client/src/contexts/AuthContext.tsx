@@ -22,6 +22,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+async function readApiResponse(response: Response) {
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+
+  if (contentType.includes('application/json')) {
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { error: text || 'Resposta JSON inválida do servidor' };
+    }
+  }
+
+  return {
+    error: text || `Servidor respondeu com status ${response.status}`,
+    raw: text,
+  };
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<any>(null);
@@ -43,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
               const response = await fetch(`/api/users/${parsedUser.id}`);
               if (response.ok) {
-                const result = await response.json();
+                const result = await readApiResponse(response);
                 if (result.success && result.data) {
                   console.log('✅ User verified in database');
                   setUser(parsedUser);
@@ -87,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         console.log('❌ Login failed:', data.error);
@@ -104,7 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const profileResponse = await fetch(`/api/users/${userData.id}`);
 
         if (profileResponse.ok) {
-          const result = await profileResponse.json();
+          const result = await readApiResponse(profileResponse);
           if (result.success && result.data.avatar_url) {
             userData = {
               ...userData,
@@ -140,7 +158,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ email, password, full_name: name }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         return { error: data.error || 'Sign up failed' };
@@ -183,7 +201,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Call cleanup endpoint to verify database state
     try {
       const response = await fetch('/api/auth/cleanup', { method: 'POST' });
-      const result = await response.json();
+      const result = await readApiResponse(response);
       if (result.success) {
         console.log('✅ Server session cleanup completed');
         console.log('Valid users in database:', result.validUsers);
@@ -244,7 +262,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    const fallback: AuthContextType = {
+      user: null,
+      session: null,
+      signIn: async () => ({ success: false, error: 'AuthProvider indisponível' }),
+      signUp: async () => ({ error: 'AuthProvider indisponível' }),
+      signOut: async () => {},
+      clearInvalidSession: async () => {},
+      loading: false,
+      isLoading: false,
+      updateUserAvatar: () => {},
+    };
+
+    console.error('⚠️ useAuth called outside AuthProvider, using fallback context');
+    return fallback;
   }
   return context;
 };

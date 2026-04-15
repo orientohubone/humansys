@@ -3,6 +3,16 @@ import { registerRoutes } from "../server/routes";
 import { initializeDatabase } from "../server/db";
 
 let appInitPromise: Promise<express.Express> | null = null;
+let dbInitPromise: Promise<void> | null = null;
+
+function warmDatabase() {
+  if (!dbInitPromise) {
+    dbInitPromise = initializeDatabase().catch((err: any) => {
+      console.error("⚠️ DB init skipped in serverless handler:", err?.message || err);
+    });
+  }
+  return dbInitPromise;
+}
 
 async function getApp(): Promise<express.Express> {
   if (!appInitPromise) {
@@ -29,11 +39,23 @@ async function getApp(): Promise<express.Express> {
       app.use("/api", express.json({ limit: "10mb" }));
       app.use("/api", express.urlencoded({ extended: true, limit: "10mb" }));
 
-      // Best-effort DB init — never crashes the function
-      try {
-        await initializeDatabase();
-      } catch (err: any) {
-        console.error("⚠️ DB init skipped:", err?.message);
+      // Some serverless adapters strip the /api prefix before Express sees the request.
+      // Normalize it so our existing /api routes keep working in every environment.
+      app.use((req, _res, next) => {
+        if (req.url && !req.url.startsWith("/api")) {
+          req.url = `/api${req.url}`;
+        }
+        next();
+      });
+
+      // In serverless, avoid blocking the first request on schema warm-up.
+      // The login route still uses the real database; this only prevents cold-start timeouts.
+      if (process.env.SKIP_DB_INIT !== "true") {
+        if (process.env.VERCEL) {
+          void warmDatabase();
+        } else {
+          await warmDatabase();
+        }
       }
 
       await registerRoutes(app);
